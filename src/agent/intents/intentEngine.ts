@@ -131,20 +131,36 @@ export class IntentEngine {
     return missing;
   }
 
-  private generateContextualQuestions(type: IntentType, missing: string[]): string[] {
-    const questions: string[] = [];
+  private generateContextualQuestions(type: IntentType, missing: string[]): any[] {
+    const questions: any[] = [];
 
     if (missing.includes('framework')) {
-      questions.push('What framework would you like? (React, Vue, Next.js, etc.)');
+      questions.push({
+        text: 'What framework would you like?',
+        options: ['React', 'Vue', 'Next.js', 'Svelte', 'Other'],
+        key: 'framework'
+      });
     }
     if (missing.includes('project_name')) {
-      questions.push('What should I call this project?');
+      questions.push({
+        text: 'What should I call this project?',
+        options: [],
+        key: 'project_name'
+      });
     }
     if (missing.includes('feature_type')) {
-      questions.push('What type of component or feature? (React component, API endpoint, etc.)');
+      questions.push({
+        text: 'What type of component or feature?',
+        options: ['React Component', 'API Endpoint', 'Utility Function', 'Other'],
+        key: 'feature_type'
+      });
     }
     if (missing.includes('error_description')) {
-      questions.push('Can you describe the error you\'re seeing?');
+      questions.push({
+        text: 'Can you describe the error you\'re seeing?',
+        options: ['Runtime Crash', 'Build Error', 'UI Bug', 'Other'],
+        key: 'error_description'
+      });
     }
 
     return questions.slice(0, 2); // Return max 2 questions

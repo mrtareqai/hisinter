@@ -14,6 +14,7 @@ export interface ReasoningChain {
   finalConfidence: number;
   hypothesis: string;
   hypothesisValidation: boolean;
+  reflection?: string;
   timestamp: number;
 }
 
@@ -92,13 +93,25 @@ export class DeepReasoningEngine {
       reasoning: `Evaluating competing approaches and ranking by effectiveness`,
     });
 
-    // Step 5: Conclusion
+    // Step 5: Self-Reflection & Error Detection
+    const reflection = this.reflect(chain, context);
+    chain.reflection = reflection;
+    chain.steps.push({
+      stepNumber: 5,
+      thought: `Reflection: ${reflection}`,
+      assumptions: [],
+      alternatives: [],
+      confidence: 0.9,
+      reasoning: `Critically evaluating the reasoning chain for potential biases, missing context, or logical gaps`,
+    });
+
+    // Step 6: Conclusion
     chain.conclusion = this.synthesizeConclusion(chain);
     chain.hypothesisValidation = true;
     chain.finalConfidence = this.calculateFinalConfidence(chain);
 
     chain.steps.push({
-      stepNumber: 5,
+      stepNumber: 6,
       thought: chain.conclusion,
       assumptions: [],
       alternatives: [],
@@ -139,10 +152,28 @@ export class DeepReasoningEngine {
     return `Recommended action: Use ${topAlt} based on reasoning chain with ${(chain.finalConfidence * 100).toFixed(1)}% confidence`;
   }
 
+  private reflect(chain: ReasoningChain, context: Record<string, any>): string {
+    const issues = [];
+    if (chain.steps[1].confidence < 0.8) issues.push('Lower confidence in hypothesis');
+    if (chain.steps[3].alternatives.length < 2) issues.push('Limited alternatives considered');
+
+    if (issues.length === 0) {
+      return 'Reasoning path appears solid and well-supported by context.';
+    }
+    return `Reasoning validated with considerations: ${issues.join(', ')}. Proceeding with caution.`;
+  }
+
   private calculateFinalConfidence(chain: ReasoningChain): number {
     if (chain.steps.length === 0) return 0;
     const avgConfidence = chain.steps.reduce((sum, step) => sum + step.confidence, 0) / chain.steps.length;
-    return Math.min(0.99, avgConfidence);
+
+    // Penalize if reflection found issues
+    let penalty = 0;
+    if (chain.reflection && chain.reflection.includes('caution')) {
+      penalty = 0.1;
+    }
+
+    return Math.max(0.1, Math.min(0.99, avgConfidence - penalty));
   }
 
   public testHypothesis(

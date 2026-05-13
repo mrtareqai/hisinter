@@ -118,11 +118,11 @@ export class WorkspaceIntelligence {
         }
     }
 
-    private async scanFiles(workspaceRoot: string, maxFiles = 500): Promise<void> {
+    private async scanFiles(workspaceRoot: string, maxFiles = 5000): Promise<void> {
         if (!this.metadata) return;
 
         const scan = (dir: string, depth = 0): void => {
-            if (this.metadata!.files.size >= maxFiles || depth > 5) return;
+            if (this.metadata!.files.size >= maxFiles || depth > 15) return;
 
             try {
                 const entries = fs.readdirSync(dir);

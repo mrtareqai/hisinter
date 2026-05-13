@@ -52,21 +52,45 @@ export class UnifiedAgent {
       return this.generateInitialResponse(intent);
     }
 
-    // Step 2: Create execution plan
+    // Step 2: Create execution plan (Hierarchical Decomposition)
     const plan = await this.planner.createPlan(intent);
     this.state.currentTask = plan;
 
-    // Step 3: Analyze context
+    // Step 3: Analyze context (Deep Project Understanding)
     const context = await this.contextBrain.analyzeProject();
     this.state.contextState = context;
 
-    // Step 4: Get relevant memories
+    // Step 4: Get relevant memories (Prior Knowledge)
     const relevantMemories = this.memoryCore.recallSimilar(userMessage, 3);
+    const archDecisions = this.memoryCore.recall(MemoryType.PROJECT_PATTERN, undefined, 5)
+      .filter(m => m.metadata.category === 'architectural_decision');
 
-    // Step 5: Execute plan
+    // Step 5: Execute plan with Incremental Reasoning & Self-Correction
     this.state.isActive = true;
-    const executionResults = await this.executionEngine.executePlan(plan, (result) => {
+
+    // Track architectural decisions made during this session
+    const sessionDecisions: string[] = [];
+
+    const executionResults = await this.executionEngine.executePlan(plan, async (result) => {
       this.handleExecutionStep(result, plan);
+
+      // Reflection Loop after each step
+      if (result.success) {
+        const step = plan.steps.find(s => s.id === result.stepId);
+        if (step && step.description.includes('architectural')) {
+          this.memoryCore.learnArchitecturalDecision(
+            step.description,
+            'Based on successful execution of plan step',
+            [this.workspaceRoot]
+          );
+        }
+      } else {
+        // Self-correction logic
+        const errorAnalysis = this.errorIntelligence.analyzeError(result.error!, result.stepId);
+        if (errorAnalysis.canAutoRecover) {
+          // Attempt recovery...
+        }
+      }
     });
 
     // Step 6: Handle any errors

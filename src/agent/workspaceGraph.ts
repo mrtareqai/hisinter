@@ -195,47 +195,63 @@ export class WorkspaceGraph {
   /**
    * Get context for a specific file - related files and their relevance
    */
-  getContextForFile(filePath: string): FileContext[] {
+  getContextForFile(filePath: string, depth: number = 2): FileContext[] {
     const node = this.graph.nodes.get(filePath);
     if (!node) return [];
 
     const context: FileContext[] = [];
     const visited = new Set<string>();
+    visited.add(filePath);
 
-    // Add dependencies
-    node.dependencies.forEach(dep => {
-      if (!visited.has(dep)) {
-        context.push({
-          path: dep,
-          relevanceScore: 0.9,
-          reason: 'Direct dependency',
-          distance: 1
-        });
-        visited.add(dep);
+    // Helper for recursive exploration
+    const explore = (currentPath: string, currentDepth: number, score: number) => {
+      if (currentDepth > depth) return;
+      const currentNode = this.graph.nodes.get(currentPath);
+      if (!currentNode) return;
+
+      const neighbors = [
+        ...Array.from(currentNode.dependencies).map(d => ({ path: d, reason: 'Dependency', score: score })),
+        ...Array.from(currentNode.dependents).map(d => ({ path: d, reason: 'Dependent', score: score * 0.9 }))
+      ];
+
+      for (const neighbor of neighbors) {
+        if (!visited.has(neighbor.path)) {
+          visited.add(neighbor.path);
+          context.push({
+            path: neighbor.path,
+            relevanceScore: neighbor.score,
+            reason: `${neighbor.reason} (distance ${currentDepth})`,
+            distance: currentDepth
+          });
+          explore(neighbor.path, currentDepth + 1, neighbor.score * 0.7);
+        }
       }
-    });
+    };
 
-    // Add dependents
-    node.dependents.forEach(dep => {
-      if (!visited.has(dep)) {
-        context.push({
-          path: dep,
-          relevanceScore: 0.8,
-          reason: 'Directly depends on this',
-          distance: 1
-        });
-        visited.add(dep);
-      }
-    });
+    explore(filePath, 1, 0.9);
 
-    // Add same-directory files
+    // Add same-directory files (lower priority)
     const dir = path.dirname(filePath);
     this.graph.nodes.forEach((n, nodePath) => {
-      if (path.dirname(nodePath) === dir && nodePath !== filePath && !visited.has(nodePath)) {
+      if (path.dirname(nodePath) === dir && !visited.has(nodePath)) {
         context.push({
           path: nodePath,
-          relevanceScore: 0.6,
+          relevanceScore: 0.4,
           reason: 'Same directory',
+          distance: 1
+        });
+        visited.add(nodePath);
+      }
+    });
+
+    // Architecture-aware: find related files by pattern match (e.g. component -> style)
+    const fileName = path.basename(filePath, path.extname(filePath));
+    this.graph.nodes.forEach((n, nodePath) => {
+      if (!visited.has(nodePath) && path.basename(nodePath).includes(fileName)) {
+        context.push({
+          path: nodePath,
+          relevanceScore: 0.7,
+          reason: 'Naming pattern match (architectural link)',
           distance: 1
         });
         visited.add(nodePath);
@@ -419,8 +435,13 @@ export class WorkspaceGraph {
         while ((match = importRegex.exec(content)) !== null) {
           let importPath = match[1];
 
+          // Resolve aliases (common in modern projects)
+          if (importPath.startsWith('@/')) {
+            importPath = path.join('src', importPath.substring(2));
+          }
+
           // Resolve relative imports
-          if (importPath.startsWith('.')) {
+          if (importPath.startsWith('.') || (importPath.includes('/') && !importPath.includes('node_modules') && !this.isExternalPackage(importPath))) {
             const dir = path.dirname(node.path);
             importPath = path.normalize(path.join(dir, importPath));
             
@@ -475,6 +496,15 @@ export class WorkspaceGraph {
       const regex = new RegExp(pattern.replace(/\*/g, '.*'));
       return regex.test(relativePath);
     });
+  }
+
+  /**
+   * Private: Check if a path is likely an external package
+   */
+  private isExternalPackage(importPath: string): boolean {
+    const commonPackages = ['react', 'vue', 'vscode', 'path', 'fs', 'http', 'os', 'crypto'];
+    const firstPart = importPath.split('/')[0];
+    return commonPackages.includes(firstPart) || (!importPath.startsWith('.') && !importPath.startsWith('@/'));
   }
 
   /**

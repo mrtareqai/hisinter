@@ -3,7 +3,7 @@ import { ChevronDown, Send, Loader, CheckCircle, AlertCircle } from 'lucide-reac
 
 interface Message {
   id: string;
-  type: 'user' | 'agent' | 'thinking' | 'result';
+  type: 'user' | 'agent' | 'thinking' | 'result' | 'question';
   content: string;
   timestamp: number;
   metadata?: any;
@@ -16,6 +16,18 @@ interface Message {
 export const UnifiedAgentInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+
+  const sendSelectedOption = (option: string) => {
+    // Add user message for the selected option
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      type: 'user',
+      content: option,
+      timestamp: Date.now(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    // Here you would also post the message to the VS Code extension host
+  };
   const [isLoading, setIsLoading] = useState(false);
   const [showThinking, setShowThinking] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -103,6 +115,7 @@ export const UnifiedAgentInterface: React.FC = () => {
               <MessageBubble
                 key={message.id}
                 message={message}
+                onSelectOption={sendSelectedOption}
                 onCollapseThinking={() => {
                   if (message.type === 'thinking') {
                     setShowThinking(false);
@@ -153,11 +166,13 @@ export const UnifiedAgentInterface: React.FC = () => {
 interface MessageBubbleProps {
   message: Message;
   onCollapseThinking?: () => void;
+  onSelectOption?: (option: string) => void;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   onCollapseThinking,
+  onSelectOption,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -166,6 +181,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     agent: 'bg-muted text-foreground',
     thinking: 'bg-blue-50 text-foreground border border-blue-200',
     result: 'bg-green-50 text-foreground border border-green-200',
+    question: 'bg-secondary text-foreground border border-secondary',
   }[message.type];
 
   const maxWidth = message.type === 'user' ? 'max-w-md' : 'max-w-2xl';
@@ -199,6 +215,20 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             {message.metadata?.confidence && (
               <div className="mt-2 text-xs opacity-70">
                 Confidence: {(message.metadata.confidence * 100).toFixed(0)}%
+              </div>
+            )}
+
+            {message.type === 'question' && message.metadata?.options && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {message.metadata.options.map((option: string, idx: number) => (
+                  <button
+                    key={idx}
+                    onClick={() => onSelectOption?.(option)}
+                    className="px-4 py-2 bg-background border border-border rounded-md text-xs font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    {option}
+                  </button>
+                ))}
               </div>
             )}
           </div>
