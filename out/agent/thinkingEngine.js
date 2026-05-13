@@ -213,7 +213,7 @@ class ThinkingEngine {
     }
     /** Get the system prompt enhancement for this task type */
     getTaskPromptEnhancement(taskType) {
-        const enhancements = {
+        const baseEnhancements = {
             explore: '\nYou MUST explore the ENTIRE project first. Use file_list recursively, then file_read on EVERY source file. Build a complete understanding before responding.',
             analyze: '\nDo a DEEP analysis. Read ALL source files. Identify architecture, patterns, issues, and suggestions. Present findings in a structured format with tables.',
             plan: '\nCreate a DETAILED implementation plan. First understand the current state by reading files, then propose phased changes with specific file modifications.',
@@ -223,7 +223,16 @@ class ThinkingEngine {
             implement: '\nPlan the implementation first, then create/modify files systematically. Verify the result.',
             quick: '',
         };
-        return enhancements[taskType];
+        // DS 6.7B Specific Optimizations
+        const ds67bEnhancements = `
+DEEPSEEK-CODER OPTIMIZATION:
+- BE CONCISE: Use minimal tokens for thoughts.
+- VERIFY: After every action, explicitly check if the result matches expectations.
+- STEP-BY-STEP: Decompose complex tasks into 3-5 small, verifiable steps.
+- ARCHITECTURAL AWARENESS: Always consider how a change in one file affects its dependents.
+- SELF-CORRECTION: If a tool fails or output is unexpected, stop and re-analyze.
+`;
+        return baseEnhancements[taskType] + '\n' + ds67bEnhancements;
     }
 }
 exports.ThinkingEngine = ThinkingEngine;

@@ -322,17 +322,22 @@ export class ModelAdapter {
         if (tools.length === 0) return '';
         const toolList = tools.map(t => `  - ${t.function.name}: ${t.function.description}`).join('\n');
         
+        // Specialized prompt for DeepSeek-Coder 6.7B to improve tool reliability
+        const isDS = family.includes('deepseek');
+
         return `
 === TOOLS ===
-You are an AUTONOMOUS AGENT. For ACTION requests, you MUST use tools.
-For greetings (hi, hello), respond normally — no JSON, no tools.
+You are an AUTONOMOUS ENGINEERING AGENT.
+Your goal is to solve the task using the provided tools with ARCHITECTURAL PRECISION.
+
+${isDS ? 'DEEPSEEK-CODER GUIDELINES:\n- Output ONLY the JSON block for tool calls.\n- Do NOT provide conversational preamble before tool calls.\n- Maintain strict focus on the code structure.' : ''}
 
 IMPORTANT: To EDIT existing files, use file_replace or file_insert (NOT file_write).
-WORKFLOW: file_read -> file_replace/file_insert/file_patch -> terminal_run validation
+WORKFLOW: file_read -> analyze dependencies -> file_replace/file_insert/file_patch -> terminal_run validation
 WHEN task is large: work in small scoped edits, then verify after each mutation.
 NEVER regenerate full files unless creating a brand-new file.
 
-RESPONSE FORMAT (JSON ONLY, no extra text):
+RESPONSE FORMAT (STRICT JSON):
 \`\`\`json
 { "tool": "tool_name", "args": { "param1": "value1" } }
 \`\`\`

@@ -110,6 +110,14 @@ export class SilentMemoryCore {
     });
   }
 
+  learnArchitecturalDecision(decision: string, rationale: string, affectedModules: string[]): void {
+    this.learn(MemoryType.PROJECT_PATTERN, decision, {
+      rationale,
+      affectedModules,
+      category: 'architectural_decision'
+    });
+  }
+
   learnErrorFix(errorType: string, fix: string, context: string): void {
     this.learn(MemoryType.ERROR_FIX, fix, {
       errorType,

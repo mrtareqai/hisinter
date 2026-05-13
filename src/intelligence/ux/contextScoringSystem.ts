@@ -137,12 +137,17 @@ export class ContextScoringSystem {
     let totalTokens = 0;
     const selected: RelevanceScore[] = [];
 
+    // If context is too large, use summarization for lower priority items
+    const summarizationThreshold = maxTokens * 0.7;
+
     // Always include critical elements
     scores
       .filter((s) => s.priority === 'critical')
       .forEach((score) => {
-        selected.push(score);
-        totalTokens += score.estimatedTokenCost;
+        if (totalTokens + score.estimatedTokenCost <= maxTokens) {
+          selected.push(score);
+          totalTokens += score.estimatedTokenCost;
+        }
       });
 
     // Then include high priority
@@ -159,9 +164,15 @@ export class ContextScoringSystem {
     scores
       .filter((s) => s.priority === 'medium' && !selected.includes(s))
       .forEach((score) => {
-        if (totalTokens + score.estimatedTokenCost <= maxTokens) {
+        const cost = totalTokens > summarizationThreshold ? Math.ceil(score.estimatedTokenCost * 0.2) : score.estimatedTokenCost;
+
+        if (totalTokens + cost <= maxTokens) {
+          // If we are over threshold, mark for summarization
+          if (totalTokens > summarizationThreshold) {
+            (score as any).needsSummarization = true;
+          }
           selected.push(score);
-          totalTokens += score.estimatedTokenCost;
+          totalTokens += cost;
         }
       });
 

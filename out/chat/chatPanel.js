@@ -939,6 +939,18 @@ window.addEventListener('message',function(event){
     else if(ev.type === 'status'){ addLog(ev.content || 'status'); }
     else if(ev.type === 'error'){ addMessage('error', ev.content || 'Error'); addLog('error'); }
     else if(ev.type === 'info'){ addMessage('info', ev.content || ''); addLog(ev.content || 'info'); }
+    else if(ev.type === 'question'){
+      var html = '<div style="margin-bottom:8px">' + renderMarkdown(ev.content || '') + '</div>';
+      if(ev.metadata && ev.metadata.options){
+        html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">';
+        ev.metadata.options.forEach(function(opt){
+          html += '<button type="button" class="opt-btn" style="height:auto;padding:6px 12px;font-size:11px;background:rgba(138,77,255,0.15);border-color:rgba(138,77,255,0.4)" onclick="const v=acquireVsCodeApi();v.postMessage({type:\'send\',text:\''+esc(opt)+'\'})">' + esc(opt) + '</button>';
+        });
+        html += '</div>';
+      }
+      addHtmlMessage('assistant', html);
+      addLog('question asked');
+    }
   }
 });
 setMode(currentMode);
