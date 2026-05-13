@@ -2,7 +2,7 @@
   "name": "sinter-ai",
   "displayName": "Sinter AI - Unified Offline IDE Agent",
   "description": "Local AI Agent with Multi-Step Execution, Computer Use, Document Creation, Browser Automation, and full offline capabilities",
-  "version": "2.1.0",
+  "version": "2.10.1",
   "publisher": "sinter",
   "engines": {
     "vscode": "^1.85.0"

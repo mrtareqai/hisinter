@@ -427,9 +427,9 @@ export class ChatPanelProvider implements vscode.WebviewViewProvider {
         try {
             const packagePath = path.join(this.extensionUri.fsPath, 'package.json');
             const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf-8'));
-            return String(pkg.version || '2.0.6');
+            return String(pkg.version || '2.10.1');
         } catch {
-            return '2.0.6';
+            return '2.10.1';
         }
     }
 
@@ -549,7 +549,7 @@ button.danger{border-color:#74334d;background:#271328;color:#ffdce8}
         <div class="small-label">Confidence Score</div>
         <div class="agent-foot" id="autonomyText">Autonomy Level</div>
       </div>
-      <div class="profile"><div class="avatar">S</div><div><strong>Sinter AI</strong><div class="brand-sub">v2.0.6</div></div><div class="version" id="versionText">2.0.6</div></div>
+      <div class="profile"><div class="avatar">S</div><div><strong>Sinter AI</strong><div class="brand-sub">v2.10.1</div></div><div class="version" id="versionText">2.10.1</div></div>
     </aside>
 
     <main class="console">
@@ -770,7 +770,7 @@ function setMode(mode){
 function renderStatus(){
   if(!status) return;
   const ws = status.workspaceStats || {};
-  document.getElementById('versionText').textContent = status.extensionVersion || '2.0.6';
+  document.getElementById('versionText').textContent = status.extensionVersion || '2.10.1';
   document.getElementById('confidenceValue').textContent = Number(status.confidence || 0) + '%';
   document.getElementById('confidenceRing').style.setProperty('--score', Number(status.confidence || 0));
   document.getElementById('agentLevel').textContent = status.autonomyLevel || 'HIGH';
