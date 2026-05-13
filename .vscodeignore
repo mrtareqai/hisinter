@@ -1,0 +1,11 @@
+.git/**
+.vscode/**
+vscode-*/**
+src/**
+!out/extension.js
+**/*.vsix
+**/*.txt
+**/*.md
+**/*.log
+package-lock.json
+tsconfig.json

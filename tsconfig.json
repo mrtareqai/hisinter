@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2022",
+    "outDir": "out",
+    "rootDir": "src",
+    "lib": ["ES2022"],
+    "sourceMap": true,
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "types": ["node", "vscode"]
+  },
+  "include": ["src/extension.ts"],
+  "exclude": ["node_modules", "out", "src/ui/**/*", "src/intelligence/**/*"]
+}

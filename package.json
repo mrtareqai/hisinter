@@ -1,0 +1,300 @@
+{
+  "name": "sinter-ai",
+  "displayName": "Sinter AI - Unified Offline IDE Agent",
+  "description": "Local AI Agent with Multi-Step Execution, Computer Use, Document Creation, Browser Automation, and full offline capabilities",
+  "version": "2.1.0",
+  "publisher": "sinter",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onView:sinter.chatPanel",
+    "onView:sinter.modelManager"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sinter-sidebar",
+          "title": "Sinter AI",
+          "icon": "media/sinter-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "sinter-sidebar": [
+        {
+          "type": "webview",
+          "id": "sinter.chatPanel",
+          "name": "Chat"
+        },
+        {
+          "id": "sinter.modelManager",
+          "name": "Models"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "sinter.sendMessage",
+        "title": "Sinter: Send Message"
+      },
+      {
+        "command": "sinter.newChat",
+        "title": "Sinter: New Chat"
+      },
+      {
+        "command": "sinter.selectModel",
+        "title": "Sinter: Select Model"
+      },
+      {
+        "command": "sinter.pullModel",
+        "title": "Sinter: Pull Model"
+      },
+      {
+        "command": "sinter.computerUse",
+        "title": "Sinter: Computer Use Mode"
+      },
+      {
+        "command": "sinter.takeScreenshot",
+        "title": "Sinter: Take Screenshot"
+      },
+      {
+        "command": "sinter.agentMode",
+        "title": "Sinter: Agent Mode"
+      },
+      {
+        "command": "sinter.sendFileToAgent",
+        "title": "Sinter: Send File to Agent",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "sinter.fixProblems",
+        "title": "Sinter: Fix Problems",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "sinter.maxMode",
+        "title": "Sinter: Max Mode"
+      },
+      {
+        "command": "sinter.deepMode",
+        "title": "Sinter: Deep Analysis Mode"
+      },
+      {
+        "command": "sinter.addGroqKey",
+        "title": "Sinter: Add Groq API Key"
+      },
+      {
+        "command": "sinter.manageGroqKeys",
+        "title": "Sinter: Manage Groq API Keys"
+      },
+      {
+        "command": "sinter.setGroqModel",
+        "title": "Sinter: Set Groq Model"
+      },
+      {
+        "command": "sinter.toggle120BMode",
+        "title": "Sinter: Toggle 120B Mode"
+      },
+      {
+        "command": "sinter.rebuildChain",
+        "title": "Sinter: Rebuild Runtime Provider Chain"
+      },
+      {
+        "command": "sinter.checkOnline",
+        "title": "Sinter: Check Online Status"
+      },
+      {
+        "command": "sinter.debugOllama",
+        "title": "Sinter: Debug Ollama Connection"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "sinter.sendFileToAgent",
+        "key": "ctrl+l",
+        "when": "editorTextFocus"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "sinter.sendFileToAgent",
+          "group": "sinter",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "sinter.fixProblems",
+          "group": "sinter"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "sinter.sendFileToAgent",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Sinter AI",
+      "properties": {
+        "sinter.ollamaUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama API URL"
+        },
+        "sinter.activeModel": {
+          "type": "string",
+          "default": "deepseek-coder:6.7b",
+          "description": "Active AI model name (auto-detected from providers)"
+        },
+        "sinter.modelProviders": {
+          "type": "array",
+          "default": [
+            {
+              "id": "ollama",
+              "name": "Ollama Local",
+              "baseUrl": "http://localhost:11434",
+              "type": "ollama",
+              "enabled": true
+            }
+          ],
+          "description": "AI model providers (Ollama, OpenAI-compatible)"
+        },
+        "sinter.defaultMode": {
+          "type": "string",
+          "default": "chat",
+          "enum": [
+            "chat",
+            "agent",
+            "computer",
+            "max",
+            "deep",
+            "planning",
+            "debug",
+            "monitor"
+          ],
+          "description": "Default mode when starting Sinter AI"
+        },
+        "sinter.localDefaultModel": {
+          "type": "string",
+          "default": "deepseek-coder:6.7b",
+          "description": "Default local model used when 120B Mode is off or cloud fallback is needed"
+        },
+        "sinter.use120BMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use the configured Groq GPT OSS 120B cloud reasoning model as the primary runtime model"
+        },
+        "sinter.runtimeRouteMode": {
+          "type": "string",
+          "default": "local",
+          "enum": [
+            "local",
+            "cloud-120b",
+            "hybrid-auto"
+          ],
+          "description": "Runtime model route: local, cloud 120B, or automatic hybrid routing"
+        },
+        "sinter.selectedRuntimeModel": {
+          "type": "string",
+          "default": "",
+          "description": "Selected runtime model id from the Chat Panel model selector"
+        },
+        "sinter.requireEditApproval": {
+          "type": "boolean",
+          "default": true,
+          "description": "Ask for approval before tools create, overwrite, or delete files"
+        },
+        "sinter.validationEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run detected validation commands after file mutations"
+        },
+        "sinter.agentEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Agent mode (tool execution)"
+        },
+        "sinter.computerUseEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Computer Use capabilities"
+        },
+        "sinter.maxTokens": {
+          "type": "number",
+          "default": 4096,
+          "description": "Max tokens per response"
+        },
+        "sinter.systemPrompt": {
+          "type": "string",
+          "default": "",
+          "description": "Custom system prompt (overrides default)"
+        },
+        "sinter.saveConversations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-save conversations to disk"
+        },
+        "sinter.maxConversationHistory": {
+          "type": "number",
+          "default": 50,
+          "description": "Max messages to keep in conversation history"
+        },
+        "sinter.temperature": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 2,
+          "description": "AI temperature (0=focused, 2=creative)"
+        },
+        "sinter.groqApiKeys": {
+          "type": "array",
+          "default": [],
+          "description": "List of Groq API keys with labels and enabled status"
+        },
+        "sinter.groqModel": {
+          "type": "string",
+          "default": "openai/gpt-oss-120b",
+          "description": "Groq cloud model"
+        },
+        "sinter.groqBaseUrl": {
+          "type": "string",
+          "default": "https://api.groq.com/openai",
+          "description": "Groq API base URL"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "bundle": "npx esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --minify",
+    "vscode:prepublish": "npm run compile",
+    "package": "npx @vscode/vsce package",
+    "publish": "vsce publish"
+  },
+  "dependencies": {
+    "lucide-react": "^1.14.0",
+    "pptxgenjs": "^3.12.0",
+    "react": "^19.2.6",
+    "tesseract.js": "^5.1.1",
+    "typescript": "^5.4.5",
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.28.0"
+  }
+}

@@ -1,0 +1,10 @@
+export { UnifiedIDEBrain } from './unifiedIDEBrain';
+export type { ExecutionRequest, ExecutionDecision, BrainState } from './unifiedIDEBrain';
+export { IntelligentQuestioningSystem } from './intelligentQuestioningSystem';
+export type { Question, QuestioningContext } from './intelligentQuestioningSystem';
+export { ProjectGenerationEngine } from './projectGenerationEngine';
+export type { ProjectTemplate, ProjectStructure, GenerationRequest, } from './projectGenerationEngine';
+export { UnifiedExecutionPipeline } from './unifiedExecutionPipeline';
+export type { PipelineStage, PipelineContext } from './unifiedExecutionPipeline';
+export { UnifiedConsoleInterface } from './unifiedConsoleInterface';
+export type { ConsoleMessage, ConsoleState } from './unifiedConsoleInterface';
